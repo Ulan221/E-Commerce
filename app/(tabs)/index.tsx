@@ -1,98 +1,94 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import {useRouter} from "expo-router";
+import {ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View} from "react-native";
+import {useCallback, useEffect, useState} from "react";
+import {SafeAreaView} from "react-native-safe-area-context";
+import SearchInput from "@/components/search-input";
+import {Product, useProductStore} from "@/app/store/use-product-store";
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isRefresh, setIsRefresh] = useState(false);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+    const {products, isLoading, fetchProducts} = useProductStore();
+
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
+
+    const onRefresh = useCallback(async () => {
+        setIsRefresh(true);
+        await fetchProducts();
+        setIsRefresh(false);
+    }, [fetchProducts]);
+
+    const filteredProducts = products.filter(p =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.brand && p.brand.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    const renderProduct = ({item}: { item: Product }) => (
+        <Pressable
+            style={styles.card}
+            onPress={() => router.push({pathname: '/details/[id]', params: {id: item.id}})}
+        >
+            <Image source={{uri: item.thumbnail}}
+                   style={styles.image}
+                   resizeMode="contain"/>
+
+            <View style={styles.contentContainer}>
+                <Text style={styles.categoryTag}>{item.category}</Text>
+
+                <View style={styles.info}>
+                    <View style={{flex: 1}}>
+                        <Text style={styles.name} numberOfLines={1}>
+                            {item.brand} {item.title}
+                        </Text>
+                        <Text style={styles.ratingText}>⭐ {item.rating}</Text>
+                    </View>
+
+                    <View style={styles.priceBadge}>
+                        <Text style={styles.price}>${item.price}</Text>
+                    </View>
+                </View>
+            </View>
+        </Pressable>
+    );
+
+    if (isLoading && !isRefresh) {
+        return <ActivityIndicator style={{flex: 1}} size="large"/>;
+    }
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery("")}/>
+            <FlatList
+                data={filteredProducts}
+                renderItem={renderProduct}
+                keyExtractor={item => item.id.toString()}
+                onRefresh={onRefresh}
+                refreshing={isRefresh}
+                contentContainerStyle={{padding: 16}}
+            />
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    container: {flex: 1, backgroundColor: '#010100'},
+    contentContainer: {padding: 12},
+    priceContainer: {backgroundColor: '#989898', paddingVertical: 8, paddingHorizontal: 15, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)',},
+    card: {backgroundColor: '#242424', borderRadius: 32, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', marginBottom: 15, overflow: 'hidden'},
+    image: {width: '100%', height: 300},
+    info: {backgroundColor: '#333333', padding: 12, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', flex: 1, flexDirection: 'row', justifyContent: 'space-between'},
+    name: {color: '#fff', fontSize: 18, fontWeight: 'bold'},
+    ratingText: {color: '#FFD700', fontSize: 14, marginTop: 2,},
+    categoryTag: {color: '#808080', fontSize: 12, textTransform: 'uppercase', marginBottom: 4, fontWeight: '600',},
+    priceBadge: {backgroundColor: '#1e88e5', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, marginLeft: 8,},
+    price: {color: '#FFFFFF', fontSize: 16, marginTop: 4},
+    button: {height: 40, width: 100, margin: 20, borderRadius: 15, backgroundColor: "#0866ff", justifyContent: "center", alignItems: "center"},
+    buttonText: {color: '#fff', fontSize: 14, fontWeight: 'bold'}
 });
