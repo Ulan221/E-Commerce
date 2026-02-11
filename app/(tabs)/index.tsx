@@ -3,7 +3,9 @@ import {ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View} f
 import {useCallback, useEffect, useState} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import SearchInput from "@/components/search-input";
-import {Product, useProductStore} from "@/app/store/use-product-store";
+import {useProductStore} from "@/app/store/use-product-store";
+import {Product} from "@/constants/types";
+
 
 export default function HomeScreen() {
     const router = useRouter();

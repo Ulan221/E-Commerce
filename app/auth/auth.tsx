@@ -22,7 +22,6 @@ export default function LoginScreen() {
     const myRedirectUri = "https://auth.expo.io/@220195ulan/lesson-expo-router";
 
 
-    // 1. Инициализируем запрос Google
     const [request, response, promptAsync] = Google.useAuthRequest({
         androidClientId: "407626885675-scq7cndecg299nn47li9tvf9j02p5fur.apps.googleusercontent.com",
         webClientId: "407626885675-000g1r4qfv196130c3c4go99bpuk45bk.apps.googleusercontent.com",
@@ -35,7 +34,6 @@ export default function LoginScreen() {
         return () => { WebBrowser.coolDownAsync(); };
     }, []);
 
-    // 2. Слушаем ответ (EventListener)
     useEffect(() => {
         if (response?.type === 'success') {
             const {authentication} = response;

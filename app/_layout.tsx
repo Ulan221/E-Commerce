@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import {useColorScheme} from '@/hooks/use-color-scheme';
 import {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
 
 export const unstable_settings = {
     initialRouteName: 'auth',
@@ -58,6 +59,7 @@ export default function RootLayout() {
                 <Stack.Screen name="modal" options={{presentation: 'modal', title: 'Modal'}}/>
             </Stack>
             <StatusBar style="light" translucent={false} backgroundColor="#010100" />
+            <Toast />
         </ThemeProvider>
     );
 }

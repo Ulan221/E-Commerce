@@ -3,17 +3,14 @@ import {Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpa
 import {useCallback, useEffect, useState} from "react";
 import {useCartStore} from "@/app/store/use-cart-store";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {Product} from "@/constants/types";
+import {api} from "@/app/store/use-product-store";
+import Toast from "react-native-toast-message";
 
-interface Product {
-    id: number;
-    brand: string;
-    title: string;
-    price: number;
-    thumbnail: string;
-    description: string;
-}
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+
+
 
 export default function DetailsScreen() {
     const insets = useSafeAreaInsets();
@@ -28,9 +25,8 @@ export default function DetailsScreen() {
     useEffect(() => {
         const loadProduct = async () => {
             try {
-                const response = await fetch(`https://dummyjson.com/products/${id}`);
-                const data = await response.json();
-                setProduct(data);
+                const response = await api.get(`/products/${id}`);
+                setProduct(response.data);
             } catch (error) {
                 console.error("Ошибка загрузки:", error);
             } finally {
@@ -51,6 +47,7 @@ export default function DetailsScreen() {
             </View>
         );
     }
+
 
     if (!product) {
         return (
@@ -97,7 +94,13 @@ export default function DetailsScreen() {
                     style={styles.buyButton}
                     onPress={() => {
                         carts.addToCart({...product, quantity: 1});
-                        alert("Добавлено!");
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Успешно!',
+                            text2: `${product.title} теперь в корзине 👋`,
+                            position: 'bottom',
+                            visibilityTime: 2000,
+                        });
                     }}
                 >
                     <Text style={styles.buyButtonText}>Купить товар</Text>
