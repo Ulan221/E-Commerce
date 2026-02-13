@@ -1,22 +1,27 @@
-import {useEffect, useState} from "react"; // Добавили useEffect
+import {useEffect} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {StyleSheet, Text, TextInput, TouchableOpacity} from "react-native";
+import {StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import {useRouter} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import {Formik} from 'formik';
+import * as Yup from 'yup';
 
-export interface User {
-    id: string;
-    name: string;
-    password: string;
-}
+
+const LoginSchema = Yup.object().shape({
+    email: Yup.string()
+        .email('Неверный формат email')
+        .required('Email нужен'),
+    password: Yup.string()
+        .min(6, 'Минимум 6 символов')
+        .matches(/\d/, 'Пароль должен содержать хотя бы одну цифру')
+        .required('Пароль нужен'),
+})
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
-    const [name, setName] = useState("");
-    const [password, setPassword] = useState("");
     const router = useRouter();
 
     const myRedirectUri = "https://auth.expo.io/@220195ulan/lesson-expo-router";
@@ -29,16 +34,20 @@ export default function LoginScreen() {
     });
     console.log("ОТПРАВЛЯЕМ В GOOGLE:", myRedirectUri);
 
+
     useEffect(() => {
-        WebBrowser.warmUpAsync();
-        return () => { WebBrowser.coolDownAsync(); };
+        WebBrowser.warmUpAsync().catch(err => console.log("Warmup error:", err));
+
+        return () => {
+            WebBrowser.coolDownAsync().catch(err => console.log("Cooldown error:", err));
+        };
     }, []);
 
     useEffect(() => {
         if (response?.type === 'success') {
             const {authentication} = response;
-            console.log("Token:", authentication?.accessToken);
-            saveUserAndGo(authentication?.accessToken);
+            saveUserAndGo(authentication?.accessToken)
+                .catch(error => console.error("Ошибка при сохранении:", error));
         }
     }, [response]);
 
@@ -47,38 +56,46 @@ export default function LoginScreen() {
         router.replace('/(tabs)');
     }
 
-    const handleLogin = async () => {
-        // Твоя старая логика для обычного входа
-        if (name.length === 0 || password.length === 0) {
-            return alert("Заполните все поля");
-        }
-        await AsyncStorage.setItem('@user_data', JSON.stringify({name, password}));
-        router.replace('/(tabs)');
-    }
-
     return (
         <SafeAreaView style={styles.container}>
-            <TextInput
-                style={styles.name}
-                placeholder={"Введите имя:"}
-                placeholderTextColor="#666"
-                value={name}
-                onChangeText={setName}
-            />
-            <TextInput
-                style={styles.password}
-                secureTextEntry={true}
-                placeholder={"Введите пароль"}
-                placeholderTextColor="#666"
-                value={password}
-                onChangeText={setPassword}
-            />
+            <Formik
+                initialValues={{email: '', password: ''}}
+                validationSchema={LoginSchema}
+                onSubmit={async (values) => {
+                    await AsyncStorage.setItem('@user_data', JSON.stringify(values));
+                    router.replace('/(tabs)');
+                }}
+            >
+                {({handleChange, handleBlur, handleSubmit, values, errors, touched}) => (
+                    <View>
+                        <TextInput
+                            style={styles.email}
+                            placeholder="Email"
+                            onChangeText={handleChange('email')}
+                            onBlur={handleBlur('email')}
+                            value={values.email}
+                        />
+                        {errors.email && touched.email &&
+                            <Text style={{color: 'red', marginLeft: 20}}>{errors.email}</Text>}
 
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Войти (Обычный)</Text>
-            </TouchableOpacity>
+                        <TextInput
+                            style={styles.password}
+                            secureTextEntry
+                            placeholder="Пароль"
+                            onChangeText={handleChange('password')}
+                            onBlur={handleBlur('password')}
+                            value={values.password}
+                        />
+                        {errors.password && touched.password &&
+                            <Text style={{color: 'red', marginLeft: 20}}>{errors.password}</Text>}
 
-            {/* ДОБАВИЛИ КНОПКУ GOOGLE */}
+                        <TouchableOpacity style={styles.button} onPress={() => handleSubmit()}>
+                            <Text style={styles.buttonText}>Войти (через Formik)</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            </Formik>
+
             <TouchableOpacity
                 style={[styles.button, {backgroundColor: '#db4437', marginTop: 20}]}
                 disabled={!request}
@@ -115,7 +132,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textTransform: 'uppercase',
     },
-    name: {
+    email: {
         height: 55,
         backgroundColor: '#1e1e1e',
         borderRadius: 12,
@@ -140,6 +157,3 @@ const styles = StyleSheet.create({
         borderColor: '#333',
     },
 });
-
-export class User {
-}

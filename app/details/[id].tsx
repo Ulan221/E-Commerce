@@ -1,15 +1,16 @@
 import {Stack, useLocalSearchParams} from 'expo-router';
-import {Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Dimensions, Image, Pressable, ScrollView, StyleSheet, Text, View} from "react-native";
 import {useCallback, useEffect, useState} from "react";
 import {useCartStore} from "@/app/store/use-cart-store";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Product} from "@/constants/types";
 import {api} from "@/app/store/use-product-store";
 import Toast from "react-native-toast-message";
+import { MotiView, useAnimationState } from 'moti';
+import {list} from "postcss";
 
 
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
-
 
 
 export default function DetailsScreen() {
@@ -18,8 +19,17 @@ export default function DetailsScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [isLiked, setIsLiked] = useState(false);
 
+
+
     const [product, setProduct] = useState<Product | null>(null);
     const carts = useCartStore();
+    const animationState = useAnimationState({
+        from: {scale: 1},
+        pressed: {scale: 0.95},
+    });
+
+
+    const getSecond  = <T,> (list: T[]) => list[1];
 
 
     useEffect(() => {
@@ -64,7 +74,7 @@ export default function DetailsScreen() {
                 flexGrow: 1,
                 paddingBottom: insets.bottom + 20,
             }}
-            >
+        >
             <Stack.Screen
                 options={{
                     title: `${product.brand} ${product.title}`
@@ -90,8 +100,9 @@ export default function DetailsScreen() {
                 <Text style={styles.descriptionTitle}>Описание</Text>
                 <Text style={styles.descriptionText}>{product.description}</Text>
 
-                <TouchableOpacity
-                    style={styles.buyButton}
+                <Pressable
+                    onPressIn={() => animationState.transitionTo('pressed')}
+                    onPressOut={() => animationState.transitionTo('from')}
                     onPress={() => {
                         carts.addToCart({...product, quantity: 1});
                         Toast.show({
@@ -103,8 +114,14 @@ export default function DetailsScreen() {
                         });
                     }}
                 >
-                    <Text style={styles.buyButtonText}>Купить товар</Text>
-                </TouchableOpacity>
+                    <MotiView
+                        state={animationState}
+                        transition={{ type: 'spring', damping: 15 } as any }
+                        style={styles.buyButton}
+                    >
+                        <Text style={styles.buyButtonText}>Купить товар</Text>
+                    </MotiView>
+                </Pressable>
             </View>
         </ScrollView>
     )

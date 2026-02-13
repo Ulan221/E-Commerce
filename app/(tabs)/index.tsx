@@ -1,10 +1,11 @@
 import {useRouter} from "expo-router";
-import {ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View} from "react-native";
+import {ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {useCallback, useEffect, useState} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import SearchInput from "@/components/search-input";
 import {useProductStore} from "@/app/store/use-product-store";
 import {Product} from "@/constants/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function HomeScreen() {
@@ -75,7 +76,11 @@ export default function HomeScreen() {
                 refreshing={isRefresh}
                 contentContainerStyle={{padding: 16}}
             />
+            <TouchableOpacity onPress={() => AsyncStorage.clear()}>
+                <Text style={{color: 'white'}}>СБРОСИТЬ ВСЁ (ДЛЯ ТЕСТА)</Text>
+            </TouchableOpacity>
         </SafeAreaView>
+
     );
 }
 

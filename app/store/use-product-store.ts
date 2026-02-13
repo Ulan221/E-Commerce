@@ -10,7 +10,7 @@ interface ProductStore {
     products: Product[];
     isLoading: boolean;
     fetchProducts: () => Promise<void>;
-    addProduct: (title: string, price: string) => Promise<void>;
+    addProduct: (newProduct: Pick<Product, 'title' | 'price' | 'description' | 'brand' | 'thumbnail'>) => Promise<void>;
 }
 
 export const useProductStore = create<ProductStore>((set) => ({
@@ -29,18 +29,17 @@ export const useProductStore = create<ProductStore>((set) => ({
         }
     },
 
-    addProduct: async (title: string, price: string) => {
+
+
+    addProduct: async (newProduct) => {
         set({ isLoading: true });
         try {
-            const response = await api.post('/products/add', {
-                title,
-                price: Number(price),
-            });
+            const response = await api.post('/products/add', newProduct);
 
-            const newProduct = response.data;
+            const createdProduct = response.data;
 
             set((state) => ({
-                products: [newProduct, ...state.products],
+                products: [createdProduct, ...state.products],
             }));
 
             alert(`Товар "${newProduct.title}" успешно добавлен!`);
