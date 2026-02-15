@@ -1,50 +1,94 @@
-# Welcome to your Expo app 👋
+📱 SmartShop — Mobile E-commerce App
+Современное мобильное приложение для покупки смартфонов, созданное с использованием React Native и Expo. Проект демонстрирует работу с внешним API, сложную навигацию, валидацию форм и глобальное управление состоянием.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+✨ Основные функции
+🔐 Авторизация:
 
-## Get started
+Вход через Google Auth (Expo AuthSession).
 
-1. Install dependencies
+Валидация форм через Formik + Yup (проверка email и сложности пароля).
 
-   ```bash
-   npm install
-   ```
+🛒 Корзина покупок:
 
-2. Start the app
+Добавление товаров в корзину с сохранением между сессиями (Zustand Persist).
 
-   ```bash
-   npx expo start
-   ```
+Управление количеством товара напрямую в профиле.
 
-In the output, you'll find options to open the app in a
+Мгновенные уведомления через Toast-message.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+📦 Каталог товаров:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Загрузка данных из DummyJSON API с использованием Axios.
 
-## Get a fresh project
+Поиск по названию модели и бренду в реальном времени.
 
-When you're ready, run:
+Функция "Pull-to-refresh" для обновления списка.
 
-```bash
-npm run reset-project
-```
+🆕 Добавление товара:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Форма создания нового продукта с выбором изображения из галереи (Expo ImagePicker).
 
-## Learn more
+Оптимистичное обновление списка товаров.
 
-To learn more about developing your project with Expo, look at the following resources:
+👤 Профиль пользователя:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Отображение данных авторизованного пользователя.
 
-## Join the community
+Интегрированный список корзины с подсчетом итоговой стоимости.
 
-Join our community of developers creating universal apps.
+💎 UI/UX:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Темная тема (Dark Mode design).
+
+Анимации кнопок через Moti (Spring animations).
+
+Безопасные отступы для всех типов экранов (Safe Area Insets).
+
+🛠 Стек технологий
+Framework: Expo (SDK 51+)
+
+Navigation: Expo Router (Native Stack & Tabs)
+
+State Management: Zustand (с middleware Persist для AsyncStorage)
+
+Forms: Formik & Yup
+
+Networking: Axios
+
+Animations: Moti (Reanimated 3)
+
+Auth: Expo Auth Session & Google Identity
+
+🚀 Установка и запуск
+Клонирование:
+
+Bash
+git clone https://github.com/your-username/smart-shop-app.git
+cd smart-shop-app
+Зависимости:
+
+Bash
+npm install
+Запуск:
+
+Bash
+npx expo start
+📂 Структура проекта
+app/(tabs)/ — основные вкладки приложения (Главная, Профиль).
+
+app/auth/ — экраны входа и регистрации.
+
+app/store/ — хранилища Zustand (useProductStore, useCartStore).
+
+app/details/[id].tsx — динамический экран характеристик товара.
+
+components/ — переиспользуемые элементы (SearchInput, Card и др.).
+
+🛠 Методы API (DummyJSON)
+Приложение взаимодействует со следующими эндпоинтами:
+
+GET /products/category/smartphones — получение списка смартфонов.
+
+GET /products/{id} — детали конкретной модели.
+
+POST /products/add — имитация добавления нового товара.
